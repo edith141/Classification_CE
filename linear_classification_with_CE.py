@@ -12,7 +12,7 @@ def getDataSet():
 	X1 = []
 	X2 = []
 	y = []
-	with open("examples/earthquake-clean.data.txt", 'r') as f:
+	with open("./earthquake-clean.data.txt", 'r') as f:
 		for line in f:
 			first, sec, thrd = line.split(",")
 			dataset.append([float(first), float(sec), float(thrd)])
