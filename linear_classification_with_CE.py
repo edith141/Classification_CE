@@ -1,30 +1,12 @@
+
+from cProfile import label
 import numpy as np
 import pandas as pd
+from pkg_resources import ResolutionError
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 from random import shuffle
-
-
-def getDataSet():
-	# get the dataset from the file. transform it into a suitable form.
-	# then shuffle it and return.
-	dataset = []
-	X1 = []
-	X2 = []
-	y = []
-	with open("./earthquake-clean.data.txt", 'r') as f:
-		for line in f:
-			first, sec, thrd = line.split(",")
-			dataset.append([float(first), float(sec), float(thrd)])
-		shuffle(dataset)
-		for i in range(len(dataset)):
-			X1.append(float(dataset[i][0]))
-			X2.append(float(dataset[i][1]))
-			y.append(float(dataset[i][2]))
-			# dataset.append([float(first), float(sec), float(thrd)])
-	# shuffle(dataset)
-	return X1, X2, y
-
+from get_data import getDataSet
 
 def random():
 	X1 = []
@@ -54,12 +36,14 @@ def standardize(data):
 	return data
 
 
-def plot(X):
+def plot(X, XT):
 	plt.scatter(X[:,0],X[:,1])
-	plt.xlabel('X1',fontweight="bold",fontsize = 15)
-	plt.ylabel('X2',fontweight="bold",fontsize = 15)
-	plt.title("Scatter Data",fontweight="bold",fontsize = 20)
+	plt.scatter(XT[:, 0], XT[:, 1], color='hotpink')
+	plt.xlabel('X1',fontsize = 12)
+	plt.ylabel('X2',fontsize = 12)
+	plt.title("Scatter Data",fontweight="bold",fontsize = 12)
 	plt.show()
+
 
 def sigmoid(X,theta):
 	z = np.dot(X,theta.T)
@@ -90,24 +74,34 @@ def predict(X,theta):
 			outcome.append(1)
 	return outcome
 
+def getAccuracy(result, original, details = False):
+	errors = 0
+	N = len(original)
+	for i in range(N):
+		if result[i] != original[i]:
+			errors += 1
+	if details: return N, errors, ((N - errors) / N) * 100
+	return ((N - errors) / N) * 100
+
 
 def plot_cost_function(cost):
 	plt.plot(cost,label="loss")
-	plt.xlabel('Iteration',fontweight="bold",fontsize = 15)
-	plt.ylabel('Loss',fontweight="bold",fontsize = 15)
-	plt.title("Cost Function",fontweight="bold",fontsize = 20)
+	plt.xlabel('Iteration',fontweight="bold",fontsize = 12)
+	plt.ylabel('Loss',fontweight="bold",fontsize = 12)
+	plt.title("Cost Function",fontweight="bold",fontsize = 12)
 	plt.legend()
 	plt.show()
 
 
-def plot_predict_classification(X,theta):
-	plt.scatter(X[:,1],X[:,2])
-	plt.xlabel('X1',fontweight="bold",fontsize = 15)
-	plt.ylabel('X2',fontweight="bold",fontsize = 15)
+def plot_predict_classification(X, XT, theta):
+	plt.scatter(X[:,1],X[:,2], label='Train Data')
+	plt.scatter(XT[:, 1], XT[:, 2], color='hotpink', label='Test Data')
+	plt.xlabel('X1',fontsize = 12)
+	plt.ylabel('X2',fontsize = 12)
 	x = np.linspace(-1.5, 1.5, 50)
 	y = -(theta[0] + theta[1]*x)/theta[2]
 	plt.plot(x,y,color="red",label="Decision Boundary")
-	plt.title("Decision Boundary for Logistic Regression",fontweight="bold",fontsize = 20)
+	plt.title("Decision Boundary for Logistic Regression",fontweight="bold",fontsize = 12)
 	plt.legend()
 	plt.show()
 
@@ -118,17 +112,24 @@ def plot_predict_classification(X,theta):
 
 if __name__ == "__main__":
 
-	X1,X2,y = getDataSet()
+	X1,X2,y, XT1, XT2, yT = getDataSet()
 
 	X1 = standardize(X1)
 	X2 = standardize(X2)
 
+	XT1 = standardize(XT1)
+	XT2 = standardize(XT2)
+
 	X = np.array(list(zip(X1,X2)))
+	XT = np.array(list(zip(XT1, XT2)))
+	# print(f"\n\n\nX: {XT}")
 	# print(X)
 
 	y = np.array(y)
+	yT = np.array(yT)
 
-	plot(X)
+	plot(X, XT)
+	
 
 	# Feature Length
 	m = X.shape[0]
@@ -141,8 +142,10 @@ if __name__ == "__main__":
 
 	# Initialize intercept with ones
 	intercept = np.ones((X.shape[0],1))
+	interceptT = np.ones((XT.shape[0],1))
 
 	X = np.concatenate((intercept,X),axis= 1)
+	XT = np.concatenate((interceptT, XT), axis=1)
 
 	# Initialize theta with zeros
 	theta = np.zeros(X.shape[1])
@@ -157,15 +160,26 @@ if __name__ == "__main__":
 		gradient = gradient_descent(X,h,y)
 		theta = update_loss(theta,0.1,gradient)
 
+	print(f"\nDimensions:\nX dim: {X.shape}")
+	print(f"XT dim: {XT.shape}")
+	print(f"Theta dim: {theta.shape}")
+	# print(f"\n\nX: {X}")
 
-	outcome = predict(X,theta)
+	# print(f"\n\n\nXLAST: {X.shape} \n {X}")
+	# print(f"\n\n\nXTLAST: {XT.shape} \n {XT}")
+	plot_predict_classification(X, XT, theta)
 
+	outcome = predict(XT,theta)
+	print(f"\nTheta: {theta}")
 	plot_cost_function(cost)
-
+	
 	print("theta_0 : {} , theta_1 : {}, theta_2 : {}".format(theta[0],theta[1],theta[2]))
-
-	metric = confusion_matrix(y,outcome)
-
+	print(f"Iterations: {num_iter}")
+	print("\nMetrics:")
+	metric = confusion_matrix(yT,outcome)
+	N, errorsN, accuracy = getAccuracy(outcome, yT, True)
+	print(f"Confusion Matrix:")
 	print(metric)
 
-	plot_predict_classification(X,theta)
+	print(f"\nAccuracy:")
+	print(f"N: {N}\nErrors: {errorsN}\nAccuracy: {accuracy}")
