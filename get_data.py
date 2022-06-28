@@ -20,7 +20,7 @@ def getDataSet():
 			first, sec, thrd = line.split(",")
 			dataset.append([float(first), float(sec), float(thrd)])
 		shuffle(dataset)
-		TrainDataSet, TestDataSet = trainTestSplit2(dataset, 0.5)
+		TrainDataSet, TestDataSet = trainTestSplit2(dataset, 0.7)
 		X1, X2, y = getDataSetInXXZ(dataSet=TrainDataSet)
 		XT1, XT2, yT = getDataSetInXXZ(TestDataSet)
 			# dataset.append([float(first), float(sec), float(thrd)])

@@ -204,7 +204,7 @@ def evalAlgo(dataset, algo, *args):
 
 
 LR = 0.1
-epochs = 1200
+epochs = 100
 
 print("\n\n\n")
 # print(f"Final Accuracy: {scores}")
@@ -215,16 +215,16 @@ runs = []
 
 runsMSE= []
 
-expRun = 50
+expRun = 100
 
 for run in range(expRun):
 	score = evalAlgo(getDataSet(), runLogisticRegression, LR, epochs)
 	runs.append(score)
 
 
-for run in range(expRun):
-	score = evalAlgo(getDataSet(), runLogisticRegressionWithCE, LR, epochs)
-	runsCE.append(score)
+# for run in range(expRun):
+# 	score = evalAlgo(getDataSet(), runLogisticRegressionWithCE, LR, epochs)
+# 	runsCE.append(score)
 
 for run in range(expRun):
 	score = evalAlgo(getDataSet(), runLogisticRegressionWithMSE, LR, epochs)
@@ -237,11 +237,11 @@ print(f'''\n\n
 			Avg accuracy: {get_avg_from_arr(runs)}%\n
 			Sum: {sum(runs)}\n''')
 
-print(f'''\n\n
-			Total runs to get an avg accuracy of the CE model: {expRun}\n
-			Accuracy array: {runs}\n
-			Avg accuracy: {get_avg_from_arr(runsCE)}%\n
-			Sum: {sum(runsCE)}\n''')
+# print(f'''\n\n
+# 			Total runs to get an avg accuracy of the CE model: {expRun}\n
+# 			Accuracy array: {runs}\n
+# 			Avg accuracy: {get_avg_from_arr(runsCE)}%\n
+# 			Sum: {sum(runsCE)}\n''')
 
 
 print(f'''\n\n

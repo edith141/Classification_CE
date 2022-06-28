@@ -110,76 +110,83 @@ def plot_predict_classification(X, XT, theta):
 
 # main
 
-if __name__ == "__main__":
+def runTest(tRuns):
+	accArr = []
+	for _ in range(tRuns):
+		X1,X2,y, XT1, XT2, yT = getDataSet()
 
-	X1,X2,y, XT1, XT2, yT = getDataSet()
+		X1 = standardize(X1)
+		X2 = standardize(X2)
 
-	X1 = standardize(X1)
-	X2 = standardize(X2)
+		XT1 = standardize(XT1)
+		XT2 = standardize(XT2)
 
-	XT1 = standardize(XT1)
-	XT2 = standardize(XT2)
+		X = np.array(list(zip(X1,X2)))
+		XT = np.array(list(zip(XT1, XT2)))
+		# print(f"\n\n\nX: {XT}")
+		# print(X)
 
-	X = np.array(list(zip(X1,X2)))
-	XT = np.array(list(zip(XT1, XT2)))
-	# print(f"\n\n\nX: {XT}")
-	# print(X)
+		y = np.array(y)
+		yT = np.array(yT)
 
-	y = np.array(y)
-	yT = np.array(yT)
+		# plot(X, XT)
+		
 
-	plot(X, XT)
-	
+		# Feature Length
+		m = X.shape[0]
 
-	# Feature Length
-	m = X.shape[0]
+		# No. of Features
+		n = X.shape
 
-	# No. of Features
-	n = X.shape
+		# No. of Classes
+		k = len(np.unique(y))
 
-	# No. of Classes
-	k = len(np.unique(y))
+		# Initialize intercept with ones
+		intercept = np.ones((X.shape[0],1))
+		interceptT = np.ones((XT.shape[0],1))
 
-	# Initialize intercept with ones
-	intercept = np.ones((X.shape[0],1))
-	interceptT = np.ones((XT.shape[0],1))
+		X = np.concatenate((intercept,X),axis= 1)
+		XT = np.concatenate((interceptT, XT), axis=1)
 
-	X = np.concatenate((intercept,X),axis= 1)
-	XT = np.concatenate((interceptT, XT), axis=1)
+		# Initialize theta with zeros
+		theta = np.zeros(X.shape[1])
 
-	# Initialize theta with zeros
-	theta = np.zeros(X.shape[1])
+		num_iter = 500
 
-	num_iter = 500
+		cost = []
 
-	cost = []
+		for i in range(num_iter):
+			h = sigmoid(X,theta)
+			cost.append(cost_function(h,y))
+			gradient = gradient_descent(X,h,y)
+			theta = update_loss(theta,0.1,gradient)
 
-	for i in range(num_iter):
-		h = sigmoid(X,theta)
-		cost.append(cost_function(h,y))
-		gradient = gradient_descent(X,h,y)
-		theta = update_loss(theta,0.1,gradient)
+		print(f"\nDimensions:\nX dim: {X.shape}")
+		print(f"XT dim: {XT.shape}")
+		print(f"Theta dim: {theta.shape}")
+		# print(f"\n\nX: {X}")
 
-	print(f"\nDimensions:\nX dim: {X.shape}")
-	print(f"XT dim: {XT.shape}")
-	print(f"Theta dim: {theta.shape}")
-	# print(f"\n\nX: {X}")
+		# print(f"\n\n\nXLAST: {X.shape} \n {X}")
+		# print(f"\n\n\nXTLAST: {XT.shape} \n {XT}")
+		# plot_predict_classification(X, XT, theta)
 
-	# print(f"\n\n\nXLAST: {X.shape} \n {X}")
-	# print(f"\n\n\nXTLAST: {XT.shape} \n {XT}")
-	plot_predict_classification(X, XT, theta)
+		outcome = predict(XT,theta)
+		print(f"\nTheta: {theta}")
+		# plot_cost_function(cost)
+		
+		print("theta_0 : {} , theta_1 : {}, theta_2 : {}".format(theta[0],theta[1],theta[2]))
+		print(f"Iterations: {num_iter}")
+		print("\nMetrics:")
+		metric = confusion_matrix(yT,outcome)
+		N, errorsN, accuracy = getAccuracy(outcome, yT, True)
+		print(f"Confusion Matrix:")
+		print(metric)
 
-	outcome = predict(XT,theta)
-	print(f"\nTheta: {theta}")
-	plot_cost_function(cost)
-	
-	print("theta_0 : {} , theta_1 : {}, theta_2 : {}".format(theta[0],theta[1],theta[2]))
-	print(f"Iterations: {num_iter}")
-	print("\nMetrics:")
-	metric = confusion_matrix(yT,outcome)
-	N, errorsN, accuracy = getAccuracy(outcome, yT, True)
-	print(f"Confusion Matrix:")
-	print(metric)
+		print(f"\nAccuracy:")
+		print(f"N: {N}\nErrors: {errorsN}\nAccuracy: {accuracy}")
+		accArr.append(accuracy)
+	return accArr
 
-	print(f"\nAccuracy:")
-	print(f"N: {N}\nErrors: {errorsN}\nAccuracy: {accuracy}")
+tRuns = 100
+accArr = runTest(tRuns)
+print(f"Average accuracy in {tRuns}: {sum(accArr) / tRuns}")
